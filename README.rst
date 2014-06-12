@@ -19,4 +19,5 @@ Install
 
 To install tmva2bin::
 
-    python setup.py install --user
+   git clone git://github.com/ndawe/tmva2bin.git
+   python setup.py install --user
