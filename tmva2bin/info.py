@@ -1,0 +1,6 @@
+NAME = 'tmva2bin'
+RELEASE = '1.0'
+DESCRIPTION = 'Convert TMVA XML files into small binary files'
+AUTHOR = 'Noel Dawe'
+AUTHOR_EMAIL = 'Noel.Dawe@cern.ch'
+URL = 'https://github.com/ndawe/tmva2bin'

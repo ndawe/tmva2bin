@@ -1,0 +1,83 @@
+#!/usr/bin/env python
+
+from rootpy.extern.argparse import ArgumentParser
+import sys
+
+def fatal(message):
+    print "FATAL ERROR: "+message
+    sys.exit(1)
+
+def printList(list):
+    for index,item in enumerate(list):
+        print str(index+1)+". "+item
+
+parser = ArgumentParser()
+parser.add_argument("-f", "--format", default="txt",
+                  choices=('txt', 'bin', 'root'),
+                  help="Output format")
+parser.add_argument("-m", "--method", dest="type", default="BDT",
+                  choices=('BDT', 'CUTS', 'TRANS'),
+                  help="Type of tree: BDT, CUTS, or TRANS")
+parser.add_argument("-c", "--categories", default=None,
+                  help="Category string e.g. {ET:F|60000}x{numTrack:I|1}")
+parser.add_argument("-o", "--output", default=None,
+                  help="name of output file")
+parser.add_argument("-b", "--batch",
+                  action="store_true", default=False,
+                  help="convert multiple files separately "
+                       "(do not combine them into one binned file)")
+parser.add_argument('files', nargs='+')
+args = parser.parse_args()
+        
+from tmva2bin.convert import convert
+from tmva2bin.decisiontree import Node
+from tmva2bin import tauvariables
+
+if args.output == None:
+    args.output = args.type
+    
+if len(args.files) > 1 and args.batch and args.type != "TRANS":
+    if args.output:
+        print ("Warning: output name specified when running in batch mode... "
+               "overriding output name defined by user!")
+    for name in args.files:
+        convert([name],
+                ".".join([name.replace("weights.xml", ""),
+                          args.type, args.format]),
+                args.type,
+                args.format)
+elif len(args.files) == 1 and args.type != "TRANS":
+    if not args.output:
+        fatal("Please specify an output name")
+    convert(args.files, ".".join([args.output, args.format]),
+            args.type, args.format)
+elif args.type != "TRANS":
+    if not args.categories:
+        fatal("please specify the category string")
+    
+    categoryTree = Node.from_string(args.categories)
+    categories = [c for c in categoryTree.walk()]
+
+    if len(categories) != len(args.files):
+        fatal("The number of files does not match the total number of categories!")
+
+    orderedInputs = []
+
+    print "Select the file for each category:"
+    for bin in categories:
+        print "category: %s" % bin
+        printList(args.files)
+        selection = int(sys.stdin.readline())-1
+        while selection < 0 or selection == len(args.files):
+            print "Invalid selection!"
+            print "category: %s" % bin
+            printList(args.files)
+            selection = int(sys.stdin.readline())-1
+        orderedInputs.append(args.files[selection])
+        args.files.pop(selection)
+
+    convert(orderedInputs,
+            ".".join([args.output, args.format]),
+            args.type,
+            args.format,
+            categoryTree)
