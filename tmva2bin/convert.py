@@ -4,28 +4,20 @@ import warnings
 
 from . import tauvariables
 from . import treereading
+from . import log
 from .decisiontree import *
 
 
 def convert(inputNames, outputName, type, format, categoryTree=None):
 
     inputs = []
-
     for file in inputNames:
-        try:
-            inputs.append(open(file,'r'))
-        except:
-            print "Input file %s will not open"%file
-            return
-    try:
-        output = open(outputName,'w')
-    except:
-        print "Output file %s will not open"%outputName
-        return
+        inputs.append(open(file,'r'))
+    output = open(outputName,'w')
 
     if len(inputs) == 1:
         for input,inputName in zip(inputs,inputNames):
-            print "Reading input..."
+            log.info("reading input ...")
             if type == "BDT":
                 bdt = treereading.readTMVA(input)
             elif type == "CUTS":
@@ -35,7 +27,7 @@ def convert(inputNames, outputName, type, format, categoryTree=None):
                 return
             if not bdt:
                 return
-            print "Writing output..."
+            log.info("writing output ...")
             variableList = bdt.variables
             output.write("0\n") # No variables are binned
             output.write(str(len(variableList))+'\n')
@@ -46,11 +38,6 @@ def convert(inputNames, outputName, type, format, categoryTree=None):
                 elif tauvariables.DPD2TD.has_key(variable):
                     output.write("%s %s\n"%(tauvariables.DPD2TD[variable].upper(),typename))
                 else:
-                    """
-                    warnings.warn(
-                        "variable %s is not defined in tauvariables as a "
-                        "TauDiscriminant variable"% variable, RuntimeWarning)
-                    """
                     output.write("%s %s\n"%(variable.upper(),typename))
 
             bdt.write(output,format)
@@ -69,14 +56,14 @@ def convert(inputNames, outputName, type, format, categoryTree=None):
                 output.write("%s %s\n"%(tauvariables.DPD2TD[variable].upper(),typename))
             else:
                 warnings.warn(
-                        "variable %s is not defined in tauvariables as a "
-                        "TauDiscriminant variable"% variable, RuntimeWarning)
+                    "variable %s is not defined in tauvariables as a "
+                    "TauDiscriminant variable"% variable, RuntimeWarning)
                 output.write("%s %s\n"%(variable.upper(),typename))
 
         categoryTree.add_pointer_leaves()
         categoryTree.write(output, "txt")
 
-        print "Reading input and merging variable lists..."
+        log.info("reading input and merging variable lists ...")
         for input in inputs:
             print input.name
             if type == "BDT":
@@ -103,7 +90,7 @@ def convert(inputNames, outputName, type, format, categoryTree=None):
                 variableTranslator[index] = newIndex
             bdt.write(temp,format,variableTranslator)
 
-        print "Writing output..."
+        log.info("writing output ...")
 
         # Write the variable list information to the output file
         output.write(str(len(masterVariableList))+'\n')
@@ -114,8 +101,8 @@ def convert(inputNames, outputName, type, format, categoryTree=None):
                 output.write("%s %s\n"%(tauvariables.DPD2TD[variable].upper(),typename))
             else:
                 warnings.warn(
-                        "variable %s is not defined in tauvariables as a "
-                        "TauDiscriminant variable"% variable, RuntimeWarning)
+                    "variable %s is not defined in tauvariables as a "
+                    "TauDiscriminant variable"% variable, RuntimeWarning)
                 output.write("%s %s\n"%(variable.upper(),typename))
 
         # Copy bdts in temporary file to the output file
@@ -130,5 +117,4 @@ def convert(inputNames, outputName, type, format, categoryTree=None):
 
     for file in inputs:
         file.close()
-    print "Done."
-
+    log.info("done")
