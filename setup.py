@@ -12,7 +12,4 @@ setup(name=NAME,
       author_email=AUTHOR_EMAIL,
       url=URL,
       packages=['tmva2bin',],
-      install_requires=[
-          'rootpy',
-      ],
       scripts=glob('scripts/*'))
