@@ -1,5 +1,5 @@
 
-Convert TMVA BDT XML files into small binary files.
+Convert TMVA BDT XML files into small binary or text files.
 
 Dependencies
 ------------
